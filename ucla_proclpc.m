@@ -48,20 +48,6 @@ function [aCoeff,resid,pitch,G,parcor,stream] = ucla_proclpc(data,sr,L,fr,fs,pre
 %
 % The synlpc routine inverts this transform and returns the original speech
 % signal.
-%
-% This code was graciously provided by:
-% Delores Etter (University of Colorado, Boulder) and
-% Professor Geoffrey Orsak (Southern Methodist University)
-% It was first published in
-% Orsak, G.C. et al. "Collaborative SP education using the Internet and
-% MATLAB" IEEE SIGNAL PROCESSING MAGAZINE Nov. 1995. vol.12, no.6, pp.
-% 23-32.
-% Modified and debugging plots added by Kate Nguyen and Malcolm Slaney
-
-% A more complete set of routines for LPC analysis can be found at
-% http://www.ee.ic.ac.uk/hp/staff/dmb/voicebox/voicebox.html
-
-% (c) 1998 Interval Research Corporation
 
 if (nargin<3), L = 13; end
 if (nargin<4), fr = 20; end
@@ -146,6 +132,16 @@ for frameIndex=1:msfr:duration-msfs+1 % frame rate=20ms
     else
         pitch(nframe) = 0;
     end
+    
+%     if pitch(nframe) == 0
+%         [peaks, locs] = findpeaks(autoCorErr);
+%         figure;
+%         subplot(2,1,1); plot(errSig);legend('Windows');
+%         subplot(2,1,2); plot(autoCorErr);legend('Correlation');
+%         hold on;
+%         plot(locs, peaks, 'r*');
+%         hold off;
+%     end
     
     % calculate additional info to improve the compressed sound quality
     resid(:,nframe) = errSig/G(nframe);

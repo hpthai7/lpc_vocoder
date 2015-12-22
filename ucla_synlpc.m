@@ -84,5 +84,4 @@ for frameIndex=1:nframe
         overlap = synFrame(msfr+1:msfs).*flipud(ramp);
     end
 end;
-
-synWave = filter(1, [1 -preemp], synWave);
+% synWave = filter(1, [1 -preemp], synWave);
