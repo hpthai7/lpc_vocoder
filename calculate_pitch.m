@@ -4,12 +4,12 @@ function [pitch_list, r] = calculate_pitch(input, Fs)
 % correlation array r
 clc;
 close all;
-frame_length = 20 * 10^(-3); % second
+frame_duration = 20 * 10^(-3); % second
 
 % fenetre de n_frame_samples echantillon
 n_total_samples = length(input)
 duration = n_total_samples / Fs;
-n_frame_samples = n_total_samples * frame_length / duration
+n_frame_samples = n_total_samples * frame_duration / duration
 
 n_windows = n_total_samples / n_frame_samples;
 
@@ -116,31 +116,44 @@ for i = 1:n_windows
 %     end
 end
 % SYTHESIS
-% input: pitch_list (1 x windows), LPC coefficients (n_windows x n_window_size),
+% input: pitch_list (1 x n_windows), coefs (n_windows x lpc_order),
 
 disp('Modelisation de source...');
 % generate input for LPC filter
-[n_windows n_coefs] = size(coefs);
-n_excitations = n_frame_samples;
-excitations = ones(n_windows, n_excitations)/10;
-% for i = 1:n_windows
-%     if pitch_list(i) == 0
-%         white_noise = zeros(1, n_excitations);
-%         excitations(i, :) = awgn(white_noise, 50); % snr
-%     end
-% end
+excitations = zeros(n_windows, n_frame_samples+1);
+for i = 1:n_windows
+    if pitch_list(i) == 0
+        white_noise = zeros(1, n_frame_samples+1);
+        excitations(i, :) = awgn(white_noise, 50); % snr
+    else
+        t = 0 : 1/Fs : frame_duration; % 20ms
+        d = 0 : 1/pitch_list(i) : 1; % 1/pitchfreq. repetition freq.
+        residFrame = (pulstran(t, d, 'tripuls', 0.001))'; % sawtooth width of 0.001s
+        size(residFrame)
+        white_noise = zeros(n_frame_samples+1, 1);
+%         white_noise = awgn(white_noise, 50); % snr
+        excitations(i, :) = residFrame + white_noise;
+%         excitations(i, :) = residFrame + 0.01*randn(n_frame_samples+1, 1);
+        if (i == 1)
+            plot(excitations(i,:));
+        end
+    end
+end
 
 disp('LPC (AR) filtering..');
-Gain = 1;
+Gain = 5;
 % LPC (AR) filtering
 idx = 0;
 for i = 1:n_windows
 %    coefs(i,1:n_coefs)
-    ar_output = filter(Gain, -coefs(i,1:n_coefs), excitations(i,1:n_excitations));
-    syn_output(idx + 1:idx + n_excitations, 1) = ar_output';
-    idx = idx + n_excitations;
+    ar_output = filter(Gain, coefs(i,:), excitations(i,:));
+    size_ar = size(ar_output)
+    syn_output(idx + 1:idx + n_frame_samples, 1) = ar_output(1:n_frame_samples)';
+    idx = idx + n_frame_samples;
 end
-
+% if 1
+%     return;
+% end
 disp('Finish');
 coef_size = size(coefs)
 out_size = size(syn_output)
