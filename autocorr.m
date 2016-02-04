@@ -1,6 +1,9 @@
 function r = autocorr(input)
-% input windows of N items
-% vector of correlation, r(k), k = 1,K
+% Calculate autocorrelation of input signal
+% Input
+%   (vector)    input   windows of N samples
+% Output
+%   (vector)    r       correlation values
 N = length(input)
 s = input(1:N);
 r = zeros(1, N);

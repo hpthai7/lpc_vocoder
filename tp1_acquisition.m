@@ -16,6 +16,6 @@ save y filename_mat;
 % Display
 plot(y);
 grid on;
-legend('Signal sampled at 8KHz');
+legend(['Signal sampled at ', num2str(Fs), 'KHz']);
 xlabel('Time (sec)');
 ylabel('Amplitude');
